@@ -1,0 +1,32 @@
+{
+  "name": "TETRIO-Bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": ""
+  },
+  "keywords": [],
+  "author": "TheMining72, Law",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "envfile": "^6.14.0",
+    "evaluator.js": "^3.2.3",
+    "express": "^4.17.1",
+    "express-minify": "^1.0.0",
+    "express-session": "^1.17.1",
+    "lodash": "^4.17.21",
+    "msgpack-lite": "^0.1.26",
+    "multer": "^1.4.2",
+    "n": "^7.1.0",
+    "os-utils": "0.0.14",
+    "request": "^2.88.2",
+    "socket.io": "^4.0.1",
+    "ws": "^7.4.4"
+  }
+}

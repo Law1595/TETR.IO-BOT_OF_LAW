@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title> BOT_OF_LAW Web Console </title>
+	<link rel="stylesheet" href="css/styles.css">
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.min.js">
+	</script>
+	<script src="/socket.io/socket.io.js">
+	</script>
+	<link rel="shortcut icon" type="image/jpg" href="https://tetr.io/user-content/avatars/6058ca3f185c8f2393446d8b.jpg?rv=1616438285271"
+	/>
+</head>
+
+<body>
+	<div id="log" contenteditable="false" readonly>
+		<span style="color: WHITE;">> [BOT_OF_LAW Web Console]</span>
+  </div>
+  <form action="/" method="POST" id="raw">
+    <input type="text" class="databox" placeholder="JSON Data" value="{&quot;command&quot;: &quot;&quot;, &quot;data&quot;: &quot;&quot;}" id="rawd" autocomplete="off">
+    <input type="submit" value="Send Raw" class="submit" id="rawsubmit">
+  </form>
+
+  <label class="options"><input type="checkbox" id="asc" onclick="asc();" checked> Auto Scroll </label>
+
+	<span style="color: WHITE;" id="ailabel"> AI </span>
+  <div id="aitypes" name="aitypes">
+    <label class="options"><input type="radio" name="aibutton" value="1">AFK</label>
+    <br>
+    <label class="options"><input type="radio" name="aibutton" value="2">Freestyle</label>
+    <br>
+    <label class="options"><input type="radio" name="aibutton" value="3">Stick > Freestyle</label>
+    <br>
+    <label class="options"><input type="radio" name="aibutton" value="4">PC Spam</label>  
+    <br>
+    <label class="options"><input type="radio" name="aibutton" value="5">Frozen</label>
+  </div>
+
+  <div id="infocontainer">
+    <span class="info" id="cpu"> CPU: </span>
+    <br>
+    <span class="info" id="ram"> RAM: </span>
+    <br>
+    <span class="info" id="usr"> Connected Users: </span>
+    <br>
+     <label class="options"> <input type="checkbox" id="hideinfo" onclick="hideinfo();"> Hide Info </label>
+  </div>
+
+	<span style="color: WHITE;" id="igchatlabel"> Game Chat </span>
+  <div id="igchat">
+    <div id="igchathistory" contenteditable="false" readonly>
+    </div>
+    <form action="#" method="POST" id="igchatbox">
+      <input type="text" class="databox" id="igchatboxsbox" placeholder="Message..." id="messagebox" autocomplete="off">
+      <input type="submit" value="Send" class="submit" id="igchatsubmit">
+    </form>
+    <input type="checkbox" id="igchatasc" onclick="igchatasc();" checked>
+  </div>
+
+	<span style="color: WHITE;" id="chatlabel"> Chat </span>
+  <div id="chat">
+    <div id="chathistory" contenteditable="false" readonly>
+    </div>
+    <form action="#" method="POST" id="chatbox">
+      <input type="text" class="databox" id="chatboxsbox" placeholder="Message..." id="messagebox" autocomplete="off">
+      <input type="submit" value="Send" class="submit" id="chatsubmit">
+    </form>
+    <input type="checkbox" id="chatasc" onclick="chatascasc();" checked>
+  </div>
+
+  <script src="js/index.js"></script>
+</body>
+</html>

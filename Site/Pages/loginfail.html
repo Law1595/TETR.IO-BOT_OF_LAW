@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> BOT_OF_LAW Web Console </title>
+</head>
+  <script>
+    function save() {
+      localStorage.setItem('Pass', document.getElementById("pass").value);
+    }
+  </script>
+<body>
+  <form action="/" method="POST">
+    <input type="password" id="pass" name="pass" placeholder="Password" required>
+    <input type="submit" value="Login" onclick="save();">
+  </form>
+</body>
+</html>

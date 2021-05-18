@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> BOT_OF_LAW Web Console </title>
+</head>
+  <script>
+    function save() {
+      localStorage.setItem('Pass', document.getElementById("pass").value);
+    }
+    function getCookie(cname) {
+      var name = cname + "=";
+      var decodedCookie = decodeURIComponent(document.cookie);
+      var ca = decodedCookie.split(';');
+      for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+          c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+          return c.substring(name.length, c.length);
+        }
+      }
+      return "";
+    }
+    window.addEventListener('load', function () {
+      if (localStorage.getItem("Pass") == undefined) return;
+        document.getElementById("pass").value = localStorage.getItem("Pass");
+        document.getElementById("form").submit();
+    })
+  </script>
+<body>
+  <form action="/" method="POST" id="form">
+    <input type="password" id="pass" name="pass" placeholder="Password" required>
+    <input type="submit" value="Login" onclick="save();">
+  </form>
+</body>
+</html>
