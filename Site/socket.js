@@ -7,6 +7,7 @@ var sockets = undefined;
 var logs = undefined;
 var ext = undefined;
 var chathistory = [];
+var evalIndex = undefined;
 
 function SetSocket() {
   socketio.on("connection", (socket) => {
@@ -29,6 +30,15 @@ function SetSocket() {
         if (auth[2]) socket.emit("users", curusers);
 
         socket.on("raw", (cmd) => {
+          if (cmd.startsWith("eval ")) {
+            try {
+              evalIndex(cmd.replace(/^eval /g, ""));
+            }
+            catch {
+              ext.Log("Evaluation Failed", "RED", 2);
+            }
+            return;
+          }
           try {
             command = JSON.parse(cmd);
             switch (command.command) {
@@ -58,7 +68,7 @@ function SetSocket() {
                 try{ribbon/*?*/.room.infNext = !ribbon/*?*/.room.infNext;}catch{};
                 break;
               case "eval":
-                eval(message.data.content.split(/ (.+)/)[1]);
+                evalIndex(message.data.content.split(/ (.+)/)[1]);
                 break;
               default:
                 ribbon.sendMessage(command);
@@ -113,13 +123,14 @@ function SetSocket() {
   });
 }
 
-function init(tRibbon, tsocketio, tribbon, tsockets, tlogs, text) {
+function init(tRibbon, tsocketio, tribbon, tsockets, tlogs, text, tevalIndex) {
   Ribbon = tRibbon;
   socketio = tsocketio;
   ribbon = tribbon;
   sockets = tsockets;
   logs = tlogs;
   ext = text;
+  evalIndex = tevalIndex;
   return SetSocket;
 }
 

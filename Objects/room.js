@@ -1,7 +1,6 @@
 const Game = require("./game");
 const _ = require("lodash");
 
-
 class Room {
   constructor(ribbon, settings) {
     this.options = {
@@ -35,6 +34,15 @@ class Room {
     this.autoStartTime = -1;
 
     this.autoStart(this.autoStartTime);
+  }
+
+  chat() {
+
+  }
+
+  cleanup() {
+    if (this.autoStartInterval) clearInterval(this.autoStartInterval);
+    if (this.game) this.game.end();
   }
 
   // Dont worry about this   >   [13:14:03] IN: {"command":"announcement","data":{"type":"maintenance","msg":"server will restart for maintenance NOW!","ts":1620652443531},"id":295}
@@ -89,6 +97,7 @@ class Room {
         }
         break;
       case "chat":
+        this.chat(message);
         const msg = message.data.content;
 
         String.prototype.cmd = function() {

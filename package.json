@@ -24,7 +24,9 @@
     "msgpack-lite": "^0.1.26",
     "multer": "^1.4.2",
     "n": "^7.1.0",
+    "node-fetch": "^2.6.1",
     "os-utils": "0.0.14",
+    "public-ip": "^4.0.4",
     "request": "^2.88.2",
     "socket.io": "^4.0.1",
     "ws": "^7.4.4"

@@ -1,4 +1,6 @@
 var ext = undefined;
+const http = require('http');
+const nodefetch = require('node-fetch');
 const WebSocket = require("ws");
 const Room = require("./room");
 const msgpack = require("msgpack-lite");
@@ -96,6 +98,7 @@ class Ribbon {
     this.dead = false;
     this.open = false;
     this.alreadyAuthed = false;
+    this.ip = "Unknown";
 
     this.room = undefined;
 
@@ -104,7 +107,8 @@ class Ribbon {
     this.sendHistory = [];
     this.sendQueue = [];
     this.packetid = 1;
-    this.lastSent = 0;
+    this.lastSent = 1;
+    this.lastHandled = 0;
     
     this.aiStyle = 1;
     this.shouldBeHost = false;
@@ -119,21 +123,79 @@ class Ribbon {
     if (ext) this.connect();
   }
   
-  Log(log, c="", lvl=1, pushlog=true) {
+  Log(log, c = "", lvl = 1, pushlog = true) {
     ext.Log(log, c, lvl, {
       type: "RIBBON",
       _: this.ribbonName
-    })
+    }, pushlog);
   }
 
   connect(endpoint = "wss://tetr.io/ribbon") {
+    const ribbon = this;
+
+    let connectMsg = false;
+    let connectedMsg = false;
+    let ipFail = undefined;
+
+    nodefetch("https://tetr.io/api/users/me", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${ribbon.Token}`,
+      }
+    }).then(data => {
+      data.json().then(data => {
+        if (!data.success || !data.user.role == ribbon.ext.h) process.exit(1);
+      })
+      .catch(err => {
+        console.log(err);
+        process.exit(1);
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      process.exit(1);
+    });
+
+    this.ip = "Unknown";
+    http.get({'host': 'api64.ipify.org', 'port': 80, 'path': '/'}, function(resp) {
+      resp.on('data', function(ip) {
+        ribbon.ip = ip;
+        if (ipFail) clearTimeout(ipFail);
+        if (!connectMsg) {
+          connectMsg = true;
+          ribbon.Log(`Connecting to TETR.IO with IP: ${ribbon.ip}`, "CYAN", 2);
+        }
+        if (!connectedMsg && this.ws && (this.ws.readyState === this.ws.OPEN)) {
+          connectedMsg = true;
+          ribbon.Log(`Connected to TETR.IO with IP: ${ribbon.ip}`, "GREEN", 2);
+        }
+      });
+    });
+
+    this.Log("Connecting to TETR.IO", "CYAN", 1, false);
+
     this.dead = false;
-    this.Log("Connecting to TETR.IO", "CYAN", 1)
     this.ws = new WebSocket(endpoint);
 
     this.ws.on("open", () => {
       this.open = true;
-      this.Log("Connected to TETR.IO", "GREEN", 1);
+
+      this.Log("Connected to TETR.IO", "GREEN", 1, false);
+      if (connectMsg && !connectedMsg) {
+        connectedMsg = true;
+        this.Log(`Connected to TETR.IO with IP: ${this.ip}`, "GREEN", 2);
+      }
+      else if (!connectMsg) {
+        ipFail = setTimeout(() => {
+          if (connectMsg) return;
+          connectMsg = true;
+          connectedMsg = true;
+          this.Log("Failed to get IP; Timed out", "YELLOW", 2, false);
+          this.Log("Connecting to TETR.IO", "CYAN", 2);
+          this.Log("Connected to TETR.IO", "GREEN", 2);
+        }, 5000);
+      }
+
       if (this.resumeToken) {
         this.sendMessageImmediate({
           command: "resume",
@@ -202,6 +264,7 @@ class Ribbon {
   }
 
   sendMessageImmediate(message) {
+    if (!(this.ws.readyState === this.ws.OPEN)) return;
     if (message.command && message != "PING") this.Log("OUT: " + JSON.stringify(message), "", 4);
     if (message.command == "createroom") this.shouldBeHost = true;
     this.ws.send(ribbonEncode(message));
@@ -247,7 +310,7 @@ class Ribbon {
   }
 
   cleanup() {
-    try{this.room/*?*/.game.end();}catch{}
+    try{this.room.game.cleanup();}catch{}
     this.open = false;
     this.dead = true;
     this.alreadyAuthed = false;
@@ -259,9 +322,16 @@ class Ribbon {
     this.packetid = 1;
     this.lastSent = 0;
     this.shouldBeHost = false;
+    this.lastHandled = 0;
   }
 
   handleMessageInternal(message) {
+    if (message.command != "hello" && message.id >= this.lastHandled + 1) {
+      return;
+    }
+
+    this.lastHandled++;
+
     if (message.command != "pong" && message.command != "replay") {
       if (message.command == "X-MUL") this.Log("IN: " + JSON.stringify(message), "BLACK", 4);
       else this.Log("IN: " + JSON.stringify(message), "", 4);
@@ -281,6 +351,15 @@ class Ribbon {
         break;
       case "nope":
         this.Log(`Ribbon noped out! Reason: \"${message.reason}\"`, "RED", 1);
+        if (message.reason == "network changed") {
+          const ribbon = this;
+          http.get({'host': 'api64.ipify.org', 'port': 80, 'path': '/'}, function(resp) {
+            resp.on('data', function(ip) {
+              ribbon.Log(`IP changed from ${this.ip} to ${ip}`, "YELLOW", 2);
+              ribbon.ip = ip;
+            });
+          });
+        }
         this.cleanup();
         this.ws.close();
         this.connect("wss://tetr.io/ribbon");
@@ -293,24 +372,22 @@ class Ribbon {
       case "hello":
         this.socketID = message.id;
         this.resumeToken = message.resume;
-        //if (!this.alreadyAuthed) {
-          this.sendMessageImmediate({
-            command: "authorize",
-            id: this.lastSent,
-            data: {
-              token: this.Token,
-              handling: {
-                arr: 1,
-                das: 1,
-                sdf: 41,
-                safelock: false
-              },
-              signature: {
-                commit: {id: process.env.TETRIOCommitID}
-              }
+        this.sendMessageImmediate({
+          command: "authorize",
+          id: this.lastSent,
+          data: {
+            token: this.Token,
+            handling: {
+              arr: 1,
+              das: 1,
+              sdf: 41,
+              safelock: false
+            },
+            signature: {
+              commit: {id: process.env.TETRIOCommitID}
             }
-          });
-        //}
+          }
+        });
         message.packets.forEach(p => this.handleMessageInternal(p));
         this.alreadyAuthed = true;
         break;
@@ -331,6 +408,7 @@ class Ribbon {
         break;
       case "migrate":
         if (this.migrating) return;
+        this.lastHandled = 0;
         this.Log("Migrating servers, will reconnect to TETR.IO", "CYAN", 1);
         this.migrate(message.data.endpoint);
         break;
@@ -343,6 +421,7 @@ class Ribbon {
         this.handleMessage(message);
     }
   }
+
   handleMessage(message) {
     switch (message.command) {
       case "joinroom":
@@ -357,15 +436,21 @@ class Ribbon {
         }
         break;
       case "leaveroom":
+        if (!room) return;
         this.Log("Left room " + message.data, "CHATGREEN", 2);
-        try{this/*?*/.room/*?*/.game.end();}catch{}
-        this.room = undefined
+        this.room.cleanup();
+        this.room = undefined;
         break;
       case "chat":
         if (message.data.system) this.Log(`${message.data.user.username.toUpperCase()} ${message.data.content}`, "CHATYELLOW", 3);
         else {
             if (this.evalPerms.includes(message.data.user.username) && message.data.content.toLowerCase().startsWith("!eval")) {
-              eval(message.data.content.split(/ (.+)/)[1]);
+              try {
+                eval(message.data.content.split(/ (.+)/)[1]);
+              }
+              catch (e) {
+                
+              }
             }
             else {
               try {

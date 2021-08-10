@@ -1,6 +1,7 @@
 function evalIndex(code) {
   eval(code);
 }
+
 const path = require("path");
 const fs = require('fs');
 require("dotenv").config({ path: path.join(__dirname, "../.env") });
@@ -17,7 +18,7 @@ var ribbon = new Ribbon(process.env.Token);
 
 var ext = require("./ext")(Ribbon, socketio, ribbon, sockets, logs);
 require("./Site/routes")(Ribbon, socketio, ribbon, sockets, logs, ext)(app);
-require("./Site/socket")(Ribbon, socketio, ribbon, sockets, logs, ext)();
+require("./Site/socket")(Ribbon, socketio, ribbon, sockets, logs, ext, evalIndex)();
 
 ext.Log("The Bot Client has started up", "GREEN", 1)
 

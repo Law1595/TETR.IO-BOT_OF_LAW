@@ -178,7 +178,8 @@ function init(tRibbon, tsocketio, tribbon, tsockets, tlogs) {
   return {
     Log: Log,
     clearLog: clearLog,
-    piecesGen: piecesGen
+    piecesGen: piecesGen,
+    h: "bot"
   }
 }
 

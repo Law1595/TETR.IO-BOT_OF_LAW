@@ -67,6 +67,7 @@ var onmsg = prevmsgs.length;
 
 socket.on("auth", function() {
   logs = document.getElementById("log");
+  chathistory = document.getElementById("chathistory");
   igchathistory = document.getElementById("igchathistory");
 
   if (prevauth) {
@@ -87,13 +88,27 @@ socket.on("auth", function() {
       
       span.setAttribute("style", "color: RED;");
 
-      span.appendChild(document.createTextNode("Disconnected"));
+      span.appendChild(document.createTextNode("The Bot has restarted"));
 
-      if (!firstmsg) igchathistory.appendChild(document.createElement("br"));
-      else firstmsg = false;
+      if (!igfirstmsg) igchathistory.appendChild(document.createElement("br"));
+      else igfirstmsg = false;
 
       igchathistory.appendChild(span);
       igchathistory.appendChild(document.createElement("br"));
+    }
+
+    {
+      let span = document.createElement("span");
+      
+      span.setAttribute("style", "color: RED;");
+
+      span.appendChild(document.createTextNode("The Bot has restarted"));
+
+      if (!firstmsg) chathistory.appendChild(document.createElement("br"));
+      else firstmsg = false;
+
+      chathistory.appendChild(span);
+      chathistory.appendChild(document.createElement("br"));
     }
 
     if (document.getElementById("asc").checked) logs.scrollTop = logs.scrollHeight;
