@@ -145,6 +145,9 @@ class Ribbon {
     }).then(data => {
       data.json().then(data => {
         if (!data.success || !data.user.role == ribbon.ext.h) process.exit(1);
+        this.Log("Connecting to TETR.IO", "CYAN", 1, false);
+        this.dead = false;
+        this.ws = new WebSocket(endpoint);
       })
       .catch(err => {
         console.log(err);
@@ -171,11 +174,6 @@ class Ribbon {
         }
       });
     });
-
-    this.Log("Connecting to TETR.IO", "CYAN", 1, false);
-
-    this.dead = false;
-    this.ws = new WebSocket(endpoint);
 
     this.ws.on("open", () => {
       this.open = true;
